@@ -128,3 +128,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Custom edits
+# Only keep the empty "uploads" directory
+uploads/*
+!uploads/.gitkeep
