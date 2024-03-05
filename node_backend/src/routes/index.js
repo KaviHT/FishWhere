@@ -33,4 +33,17 @@ router.get('/list-input-files', async (req, res) => {
     });
 });
 
+// Serve the predictions form predictions.json file
+// This endpoint reads the predictions.json file and returns its JSON content to the client
+router.get('/predictions', (req, res) => {
+    const predictionsPath = path.join(__dirname, '../../../model_service/outputs/predictions.json');
+    fs.readFile(predictionsPath, (err, data) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error reading predictions file');
+        }
+        res.json(JSON.parse(data));
+    });
+});
+
 module.exports = router;
