@@ -14,9 +14,26 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
+// Prediction model
+// This class helps in parsing the JSON data fetched from the backend
+class Prediction {
+  final double lon;
+  final double lat;
+
+  Prediction({required this.lon, required this.lat});
+
+  factory Prediction.fromJson(Map<String, dynamic> json) {
+    return Prediction(
+      lon: json['lon'],
+      lat: json['lat'],
+    );
+  }
+}
+
 class _MyAppState extends State<MyApp> {
   String? _selectedFile;
   List<String> _files = [];
+  bool _showPredictions = false;
 
   @override
   void initState() {
@@ -65,6 +82,9 @@ class _MyAppState extends State<MyApp> {
           body: jsonEncode({'fileName': fileName}));
       if (response.statusCode == 200) {
         print('File processed successfully');
+        setState(() {
+          _showPredictions = true; // Show predictions after processing
+        });
       } else {
         print('Failed to process file');
       }
@@ -86,41 +106,95 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  Future<List<Prediction>> _fetchPredictions() async {
+    var uri = Uri.parse('http://192.168.1.22:3000/predictions');
+    var response = await http.get(uri);
+    if (response.statusCode == 200) {
+      List jsonResponse = json.decode(response.body);
+      return jsonResponse.map((data) => Prediction.fromJson(data)).toList();
+    } else {
+      throw Exception('Failed to load predictions');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.blueGrey,
+        buttonTheme: ButtonThemeData(buttonColor: Colors.blueAccent),
+        textTheme: TextTheme(bodyText2: TextStyle(color: Colors.blueGrey[900])),
+      ),
       home: Scaffold(
         appBar: AppBar(
           title: Text('FishWhere Prediction'),
         ),
-        body: Column(
-          children: <Widget>[
-            DropdownButton<String>(
-              hint: Text('Select a CSV file'),
-              value: _selectedFile,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedFile = newValue!;
-                });
-              },
-              items: _files.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value.split('/').last),
-                );
-              }).toList(),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                print("Button is working!");
-                if (_selectedFile != null) {
-                  // _uploadFile(_selectedFile!);
-                  _processFile(_selectedFile!);
-                }
-              },
-              child: Text('Predict'),
-            ),
-          ],
+        body: Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Column(
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  hint: Text('Select a CSV file'),
+                  value: _selectedFile,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedFile = newValue!;
+                    });
+                  },
+                  items: _files.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value.split('/').last),
+                    );
+                  }).toList(),
+                ),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton.icon(
+                icon: Icon(Icons.cloud_upload),
+                label: Text('Predict'),
+                onPressed: () {
+                  print("Button is working!");
+                  if (_selectedFile != null) {
+                    _processFile(_selectedFile!);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.blueAccent,
+                  onPrimary: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                ),
+              ),
+              _showPredictions
+                  ? Expanded(
+                      child: FutureBuilder<List<Prediction>>(
+                        future: _fetchPredictions(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else {
+                            return ListView.builder(
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                  title: Text(
+                                      'Longitude: ${snapshot.data![index].lon}, Latitude: ${snapshot.data![index].lat}'),
+                                );
+                              },
+                            );
+                          }
+                        },
+                      ),
+                    )
+                  : Container(),
+            ],
+          ),
         ),
       ),
     );
