@@ -46,4 +46,19 @@ router.get('/predictions', (req, res) => {
     });
 });
 
+// MongoDB connection
+const Record = require('../models/record');
+
+router.post('/add-record', async (req, res) => {
+  const { date, lon, lat, weight } = req.body;
+  const newRecord = new Record({ date, lon, lat, weight });
+
+  try {
+    const savedRecord = await newRecord.save();
+    res.json(savedRecord);
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
 module.exports = router;
