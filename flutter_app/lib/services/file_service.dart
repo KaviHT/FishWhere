@@ -4,8 +4,7 @@ import '../utils/constants.dart';
 
 class FileService {
   static Future<List<String>> listInputFiles() async {
-    // var uri = Uri.parse('$APIEndpoints.listInputFiles');
-    var uri = Uri.parse('http://192.168.1.22:3000/list-input-files');
+    var uri = Uri.parse(APIEndpoints.listInputFiles);
     try {
       var response = await http.get(uri);
       if (response.statusCode == 200) {
@@ -23,7 +22,7 @@ class FileService {
   }
 
   static Future<void> uploadFile(String filePath) async {
-    var uri = Uri.parse('$APIEndpoints.predict');
+    var uri = Uri.parse(APIEndpoints.predict);
     var request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath('file', filePath));
     var response = await request.send();
