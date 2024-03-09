@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const recordSchema = new mongoose.Schema({
-  date: { type: Date, required: true },
+  date: { type: Number, required: true },
   lon: { type: Number, required: true },
   lat: { type: Number, required: true },
   weight: { type: Number, required: true }
