@@ -37,13 +37,6 @@ class _MyAppState extends State<MyApp> {
   List<String> _files = [];
   bool _showPredictions = false;
 
-  // (DB) Add TextEditingController for each input field
-  TextEditingController _dateController = TextEditingController();
-  TextEditingController _lonController = TextEditingController();
-  TextEditingController _latController = TextEditingController();
-  TextEditingController _weightController = TextEditingController();
-  // DateTime _selectedDate = DateTime.now();
-
   // (DB) Method to select date using the flutter_datetime_picker package
   // void _pickDate() {
   //   DatePicker.showDatePicker(context,
@@ -74,25 +67,6 @@ class _MyAppState extends State<MyApp> {
   //     });
   //   }
   // }
-
-  // (DB) Method to submit record to backend
-  Future<void> _addRecord() async {
-    var uri = Uri.parse('http://192.168.1.22:3000/add-record');
-    // var uri = Uri.parse('http://10.31.8.26:3000/add-record');
-    var response = await http.post(uri,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          'date': double.tryParse(_dateController.text),
-          'lon': double.tryParse(_lonController.text),
-          'lat': double.tryParse(_latController.text),
-          'weight': double.tryParse(_weightController.text)
-        }));
-    if (response.statusCode == 200) {
-      print('Record added successfully');
-    } else {
-      print('Failed to add record');
-    }
-  }
 
   @override
   void initState() {
@@ -194,99 +168,158 @@ class _MyAppState extends State<MyApp> {
         ),
         body: Padding(
           padding: EdgeInsets.all(8.0),
-          child: SingleChildScrollView(
-            // Added to ensure the view scrolls if content exceeds screen size
-            child: Column(
-              children: <Widget>[
-                // Beginning of form widgets
-                TextFormField(
-                  controller: _dateController,
-                  decoration: InputDecoration(labelText: 'Date'),
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                ),
-                TextFormField(
-                  controller: _lonController,
-                  decoration: InputDecoration(labelText: 'Longitude'),
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                ),
-                TextFormField(
-                  controller: _latController,
-                  decoration: InputDecoration(labelText: 'Latitude'),
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                ),
-                TextFormField(
-                  controller: _weightController,
-                  decoration: InputDecoration(labelText: 'Weight (kg)'),
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                ),
-                ElevatedButton(
-                  onPressed: _addRecord,
-                  child: Text('Add Record'),
-                ),
-                // End of form widgets
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20.0),
-                  child: DropdownButton<String>(
-                    isExpanded: true,
-                    hint: Text('Select a CSV file'),
-                    value: _selectedFile,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedFile = newValue!;
-                      });
-                    },
-                    items: _files.map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value.split('/').last),
-                      );
-                    }).toList(),
-                  ),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton.icon(
-                  icon: Icon(Icons.cloud_upload),
-                  label: Text('Predict'),
-                  onPressed: () {
-                    print("Button is working!");
-                    if (_selectedFile != null) {
-                      _processFile(_selectedFile!);
-                    }
+          child: Column(
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  hint: Text('Select a CSV file'),
+                  value: _selectedFile,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedFile = newValue!;
+                    });
                   },
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.blueAccent,
-                    onPrimary: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-                  ),
+                  items: _files.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value.split('/').last),
+                    );
+                  }).toList(),
                 ),
-                _showPredictions
-                    ? Expanded(
-                        child: FutureBuilder<List<Prediction>>(
-                          future: _fetchPredictions(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return CircularProgressIndicator();
-                            } else if (snapshot.hasError) {
-                              return Text('Error: ${snapshot.error}');
-                            } else {
-                              return ListView.builder(
-                                itemCount: snapshot.data!.length,
-                                itemBuilder: (context, index) {
-                                  return ListTile(
-                                    title: Text(
-                                        'Longitude: ${snapshot.data![index].lon}, Latitude: ${snapshot.data![index].lat}'),
-                                  );
-                                },
-                              );
-                            }
-                          },
-                        ),
-                      )
-                    : Container(),
-              ],
-            ),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton.icon(
+                icon: Icon(Icons.cloud_upload),
+                label: Text('Predict'),
+                onPressed: () {
+                  print("Button is working!");
+                  if (_selectedFile != null) {
+                    _processFile(_selectedFile!);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.blueAccent,
+                  onPrimary: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                ),
+              ),
+              Builder(
+                builder: (BuildContext context) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => RecordFormPage()),
+                      );
+                    },
+                    child: Text('Go to Add Record Page'),
+                  );
+                },
+              ),
+              _showPredictions
+                  ? Expanded(
+                      child: FutureBuilder<List<Prediction>>(
+                        future: _fetchPredictions(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else {
+                            return ListView.builder(
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                  title: Text(
+                                      'Longitude: ${snapshot.data![index].lon}, Latitude: ${snapshot.data![index].lat}'),
+                                );
+                              },
+                            );
+                          }
+                        },
+                      ),
+                    )
+                  : Container(),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class RecordFormPage extends StatefulWidget {
+  @override
+  _RecordFormPageState createState() => _RecordFormPageState();
+}
+
+class _RecordFormPageState extends State<RecordFormPage> {
+  // (DB) Add TextEditingController for each input field
+  TextEditingController _dateController = TextEditingController();
+  TextEditingController _lonController = TextEditingController();
+  TextEditingController _latController = TextEditingController();
+  TextEditingController _weightController = TextEditingController();
+
+  // (DB) Method to submit record to backend
+  Future<void> _addRecord() async {
+    var uri = Uri.parse('http://192.168.1.22:3000/add-record');
+    // var uri = Uri.parse('http://10.31.8.26:3000/add-record');
+    var response = await http.post(uri,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          'date': double.tryParse(_dateController.text),
+          'lon': double.tryParse(_lonController.text),
+          'lat': double.tryParse(_latController.text),
+          'weight': double.tryParse(_weightController.text)
+        }));
+    if (response.statusCode == 200) {
+      print('Record added successfully');
+    } else {
+      print('Failed to add record');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Add Record'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Column(
+          children: <Widget>[
+            // Beginning of form widgets
+            TextFormField(
+              controller: _dateController,
+              decoration: InputDecoration(labelText: 'Date'),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+            ),
+            TextFormField(
+              controller: _lonController,
+              decoration: InputDecoration(labelText: 'Longitude'),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+            ),
+            TextFormField(
+              controller: _latController,
+              decoration: InputDecoration(labelText: 'Latitude'),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+            ),
+            TextFormField(
+              controller: _weightController,
+              decoration: InputDecoration(labelText: 'Weight (kg)'),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+            ),
+            // End of form widgets
+            ElevatedButton(
+              onPressed: _addRecord,
+              child: Text('Add Record'),
+            ),
+          ],
         ),
       ),
     );
