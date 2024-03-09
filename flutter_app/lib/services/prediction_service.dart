@@ -1,11 +1,11 @@
 import 'package:http/http.dart' as http;
-import '../models/prediction.dart';
 import 'dart:convert';
+import '../models/prediction.dart';
+import '../utils/constants.dart';
 
 class PredictionService {
   static Future<bool> processFile(String fileName) async {
-    var uri = Uri.parse('http://192.168.1.22:3000/process-file');
-    // var uri = Uri.parse('http://10.31.8.26:3000/process-file');
+    var uri = Uri.parse(APIEndpoints.processFile);
     try {
       var response = await http.post(uri,
           headers: {"Content-Type": "application/json"},
@@ -24,8 +24,7 @@ class PredictionService {
   }
 
   static Future<List<Prediction>> fetchPredictions() async {
-    var uri = Uri.parse('http://192.168.1.22:3000/predictions');
-    // var uri = Uri.parse('http://10.31.8.26:3000/predictions');
+    var uri = Uri.parse(APIEndpoints.predictions);
     var response = await http.get(uri);
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);

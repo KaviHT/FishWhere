@@ -4,6 +4,7 @@ class APIEndpoints {
   static const String baseUrl = 'http://192.168.1.22:3000';
   static const String listInputFiles = '$baseUrl/list-input-files';
   static const String processFile = '$baseUrl/process-file';
+  static const String predict = '$baseUrl/predict';
   static const String predictions = '$baseUrl/predictions';
   static const String addRecord = '$baseUrl/add-record';
 }

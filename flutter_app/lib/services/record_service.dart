@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../utils/constants.dart';
 
 class RecordService {
   static Future<bool> addRecord({
@@ -8,8 +9,7 @@ class RecordService {
     required String lat,
     required String weight,
   }) async {
-    var uri = Uri.parse('http://192.168.1.22:3000/add-record');
-    // var uri = Uri.parse('http://10.31.8.26:3000/add-record');
+    var uri = Uri.parse(APIEndpoints.addRecord);
     try {
       var response = await http.post(uri,
           headers: {"Content-Type": "application/json"},
