@@ -56,7 +56,7 @@ class _MyAppState extends State<MyApp> {
   // }
 
   Future<void> _listInputFiles() async {
-    var uri = Uri.parse('http://192.168.1.22:3000/list-input-files');
+    var uri = Uri.parse('http://10.31.8.26:3000/list-input-files');
     try {
       var response = await http.get(uri);
       if (response.statusCode == 200) {
@@ -75,7 +75,7 @@ class _MyAppState extends State<MyApp> {
 
   // Instead of uploading the file, it will now send the filename to the new backend endpoint for processing.
   Future<void> _processFile(String fileName) async {
-    var uri = Uri.parse('http://192.168.1.22:3000/process-file');
+    var uri = Uri.parse('http://10.31.8.26:3000/process-file');
     try {
       var response = await http.post(uri,
           headers: {"Content-Type": "application/json"},
@@ -95,7 +95,7 @@ class _MyAppState extends State<MyApp> {
 
   // This uploads the file to Node server
   Future<void> _uploadFile(String filePath) async {
-    var uri = Uri.parse('http://192.168.1.22:3000/predict');
+    var uri = Uri.parse('http://10.31.8.26:3000/predict');
     var request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath('file', filePath));
     var response = await request.send();
@@ -107,7 +107,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<List<Prediction>> _fetchPredictions() async {
-    var uri = Uri.parse('http://192.168.1.22:3000/predictions');
+    var uri = Uri.parse('http://10.31.8.26:3000/predictions');
     var response = await http.get(uri);
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
