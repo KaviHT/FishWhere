@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 import pandas as pd
+import geopandas as gpd
+import numpy as np
 import joblib
 # from io import StringIO
 import os
@@ -31,13 +33,59 @@ def predict():
                # Drop the original 'date' column
                df.drop(columns=['date'], inplace=True)
 
+               # Select the input features
+               # input_features = df[['lat', 'lon', 'sst', 'chl']]
+
                # After the data is ready for prediction
+               # predictions = model.predict(input_features)
                predictions = model.predict(df)
 
+               # Checking the count of 0s and 1s in the predictions
+               unique, counts = np.unique(predictions, return_counts=True)
+               prediction_counts = dict(zip(unique, counts))
+               print("Count of 0s:", prediction_counts.get(0, 0))
+               print("Count of 1s:", prediction_counts.get(1, 0))
+
+               # Filter the rows where the prediction is 1
+               filtered_data = df[predictions == 1]
+
+               # Extract the latitude and longitude of these rows
+               # lat_lon_predictions = filtered_data[['lat', 'lon']]
+
+               # Filter the rows where the prediction is 1
+               filtered_data = df[predictions == 1]
+
+               # Round latitude and longitude to two decimal points
+               filtered_data['lat'] = filtered_data['lat'].round(1)
+               filtered_data['lon'] = filtered_data['lon'].round(1)
+
+               # Remove duplicates
+               filtered_data = filtered_data.drop_duplicates(subset=['lat', 'lon'])
+
+               # Create a GeoDataFrame from the filtered data
+               gdf = gpd.GeoDataFrame(filtered_data, geometry=gpd.points_from_xy(filtered_data['lon'], filtered_data['lat']), crs="EPSG:4326")
+
+               # Load the Sri Lankan EEZ GeoJSON as a GeoDataFrame
+               eez_gdf = gpd.read_file('./assets/sri_lanka_eez.geojson')
+
+               # Load the coastal line polygon GeoJSON as a GeoDataFrame
+               coastline_gdf = gpd.read_file('./assets/sri_lanka.json')
+
+               # Check if each point is within the EEZ polygon
+               gdf['in_eez'] = gdf.geometry.within(eez_gdf.geometry.unary_union)
+
+               # Create a 1 km buffer around the new coastline
+               new_coastline_buffer = coastline_gdf.geometry.unary_union.buffer(0.01)  # Approximately 1 km in decimal degrees
+
+               # Check if each point is within the 1 km buffer
+               gdf['in_buffer'] = gdf.geometry.within(new_coastline_buffer)
+
+               # Filter the data to include only points within the EEZ and outside the 1 km buffer
+               gdf_filtered = gdf[gdf['in_eez'] & ~gdf['in_buffer']]
+
+               # Save the filtered data to a JSON file
                output_file_path = './outputs/predictions.json'
-               df['prediction'] = predictions
-               good_spots = df[df['prediction'] == 1]
-               good_spots[['lon', 'lat']].to_json(output_file_path, orient='records')
+               gdf_filtered[['lon', 'lat']].to_json(output_file_path, orient='records')
                
                return jsonify({"message": "Predictions saved to outputs/predictions.json"})
           
