@@ -6,8 +6,8 @@ class Prediction {
 
   factory Prediction.fromJson(Map<String, dynamic> json) {
     return Prediction(
-      lon: json['lon'],
-      lat: json['lat'],
+      lon: (json['lon'] as num).toDouble(),
+      lat: (json['lat'] as num).toDouble(),
     );
   }
 }

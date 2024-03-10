@@ -14,6 +14,7 @@ class _HomePageState extends State<HomePage> {
   String? _selectedFile;
   List<String> _files = [];
   bool _showPredictions = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -27,12 +28,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _processFile(String fileName) async {
+    setState(() {
+      _isLoading = true;
+    });
     bool success = await PredictionService.processFile(fileName);
     if (success) {
       setState(() {
         _showPredictions = true;
       });
     }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -53,15 +60,16 @@ class _HomePageState extends State<HomePage> {
             ElevatedButton.icon(
               icon: Icon(Icons.cloud_upload),
               label: Text('Predict'),
-              onPressed: _selectedFile != null
+              onPressed: _selectedFile != null && !_isLoading
                   ? () => _processFile(_selectedFile!)
-                  : null,
+                  : null, // Disable button when loading
               style: ElevatedButton.styleFrom(
                 primary: Colors.blueAccent,
                 onPrimary: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
               ),
             ),
+            if (_isLoading) CircularProgressIndicator(),
             ElevatedButton(
               onPressed: () => Navigator.push(context,
                   MaterialPageRoute(builder: (context) => RecordFormPage())),
