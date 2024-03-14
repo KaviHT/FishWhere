@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../widgets/file_dropdown.dart';
 import '../services/file_service.dart';
 import '../views/record_form_page.dart';
 import '../services/prediction_service.dart';
 import '../widgets/prediction_list.dart';
+import '../models/prediction.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,6 +18,15 @@ class _HomePageState extends State<HomePage> {
   List<String> _files = [];
   bool _showPredictions = false;
   bool _isLoading = false;
+  List<LatLng> _predictionPoints = [];
+
+  Future<void> _updatePredictions() async {
+    // Fetch new predictions and update the map
+    List<Prediction> predictions = await PredictionService.fetchPredictions();
+    setState(() {
+      _predictionPoints = predictions.map((p) => p.toLatLng()).toList();
+    });
+  }
 
   @override
   void initState() {
