@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import '../widgets/file_dropdown.dart';
-import '../services/file_service.dart';
-import '../views/record_form_page.dart';
-import '../services/prediction_service.dart';
-import '../widgets/prediction_list.dart';
-import '../models/prediction.dart';
+import 'package:flutter_app/widgets/file_dropdown.dart';
+import 'package:flutter_app/services/file_service.dart';
+import 'package:flutter_app/views/record_form_page.dart';
+import 'package:flutter_app/services/prediction_service.dart';
+import 'package:flutter_app/widgets/prediction_list.dart';
+import 'package:flutter_app/models/prediction.dart';
 
 class HomePage extends StatefulWidget {
   @override

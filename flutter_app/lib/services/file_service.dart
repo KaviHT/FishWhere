@@ -1,6 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../utils/constants.dart';
+import 'package:flutter_app/utils/constants.dart';
 
 class FileService {
   static Future<List<String>> listInputFiles() async {

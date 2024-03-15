@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/record_service.dart';
+import 'package:flutter_app/services/record_service.dart';
 
 class RecordFormPage extends StatefulWidget {
   @override

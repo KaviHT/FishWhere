@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../models/prediction.dart';
-import '../utils/constants.dart';
+import 'package:flutter_app/models/prediction.dart';
+import 'package:flutter_app/utils/constants.dart';
 
 class PredictionService {
   static Future<bool> processFile(String fileName) async {

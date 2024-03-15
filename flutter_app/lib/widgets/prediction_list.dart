@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/prediction.dart';
-import '../services/prediction_service.dart';
+import 'package:flutter_app/models/prediction.dart';
+import 'package:flutter_app/services/prediction_service.dart';
 
 class PredictionList extends StatelessWidget {
   @override
