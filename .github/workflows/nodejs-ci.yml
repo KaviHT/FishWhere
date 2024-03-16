@@ -3,10 +3,10 @@ name: Node.js CI
 on:
   push:
     paths:
-      - 'node_backend/**'
+      - "node_backend/**"
   pull_request:
     paths:
-      - 'node_backend/**'
+      - "node_backend/**"
 
 jobs:
   build:
@@ -17,12 +17,26 @@ jobs:
         node-version: [14.x, 16.x]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: cd node_backend && npm install
-    - run: cd node_backend && npm test
-      env:
-        CI: true
+      - uses: actions/checkout@v2
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # Define the path to the directory you want to cache
+          path: node_backend/node_modules
+          # Define the key for caching and restoring the cache
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('node_backend/package-lock.json') }}
+          # Define the restore keys to find the cache in case of a cache miss
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: cd node_backend && npm install
+      - run: cd node_backend && npm test
+        env:
+          CI: true
