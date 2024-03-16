@@ -3,8 +3,6 @@ import pandas as pd
 import geopandas as gpd
 import numpy as np
 import joblib
-# from io import StringIO
-import os
 
 app = Flask(__name__)
 
@@ -20,27 +18,20 @@ def predict():
      if request.method == 'POST':
           try:
                # Assume a file is sent with the request
-               file = request.files['file']#.read().decode('utf-8')
+               file = request.files['file']
 
                if not file:
                     return "No file provided", 400
                
-               # df = pd.read_csv(StringIO(file))
                df = pd.read_csv(file)
                
                # --- Preprocess the data as needed and make predictions ---
-
-               # # Convert 'date' column to 'dayofyear'
-               # df['dayofyear'] = pd.to_datetime(df['date']).dt.dayofyear
-               # # Drop the original 'date' column
-               # df.drop(columns=['date'], inplace=True)
 
                # Select the input features
                input_features = df[['lat', 'lon', 'sst', 'chl']]
 
                # After the data is ready for prediction
                predictions = model.predict(input_features)
-               # predictions = model.predict(df)
 
                # Checking the count of 0s and 1s in the predictions
                unique, counts = np.unique(predictions, return_counts=True)
@@ -50,9 +41,6 @@ def predict():
 
                # Filter the rows where the prediction is 1
                filtered_data = df[predictions == 1]
-
-               # Extract the latitude and longitude of these rows
-               # lat_lon_predictions = filtered_data[['lat', 'lon']]
 
                # Filter the rows where the prediction is 1
                filtered_data = df[predictions == 1]
