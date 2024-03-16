@@ -15,6 +15,8 @@ model = joblib.load(MODEL_PATH)
 
 @app.route('/predict', methods=['POST'])
 def predict():
+     if 'file' not in request.files or request.files['file'].filename == '':
+          return "No file provided", 400
      if request.method == 'POST':
           try:
                # Assume a file is sent with the request
