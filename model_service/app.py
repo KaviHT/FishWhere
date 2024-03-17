@@ -42,9 +42,6 @@ def predict():
                # Filter the rows where the prediction is 1
                filtered_data = df[predictions == 1]
 
-               # Filter the rows where the prediction is 1
-               filtered_data = df[predictions == 1]
-
                # Round latitude and longitude to two decimal points
                filtered_data['lat'] = filtered_data['lat'].round(1)
                filtered_data['lon'] = filtered_data['lon'].round(1)
