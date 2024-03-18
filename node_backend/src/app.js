@@ -6,7 +6,10 @@ const PORT = process.env.PORT || 3000;
 const routes = require('./routes');
 
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/fishWhereDB', { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Use the MONGODB_URI environment variable if it's set, otherwise default to your local MongoDB URI
+const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost/fishWhereDB';
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 app.use(express.json());
 app.use(cors());

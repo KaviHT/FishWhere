@@ -8,6 +8,12 @@ on:
     paths:
       - "node_backend/**"
 
+services:
+  mongodb:
+    image: mongo
+    ports:
+      - 27017:27017
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -40,3 +46,4 @@ jobs:
       - run: cd node_backend && npm test
         env:
           CI: true
+          MONGODB_URI: mongodb://mongodb:27017/fishWhereDB
